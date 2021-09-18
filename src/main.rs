@@ -1,27 +1,30 @@
 #![no_std]
 #![no_main]
 
+mod vga_buffer;
+
 use core::panic::PanicInfo;
 
-const BUFFER: *mut u8 = 0xB8000 as *mut u8;
-const COLOR: u8 = 0xB;
-
-static GREET: &[u8] = b"CRUCIFIX";
+static LOGO: &str = r#"
+        _______  _______           _______  _     _______  _  
+       (  ____ \(  ____ )|\     /|(  ____ \( )   (  ____ \( ) |\     /|
+       | (    \/| (    )|| )   ( || (    \/| |   | (    \/| | ( \   / )
+       | |      | (____)|| |   | || |    __| |__ | (__  __| |__\ (_) / 
+       | |      |     __)| |   | || |   (__(@)__)|  __)(__(@)__)) _ (  
+       | |      | (\ (   | |   | || |      | |   | (      | |  / ( ) \ 
+       | (____/\| ) \ \__| (___) || (____/\| |   | )      | | ( /   \ )
+       (_______/|/   \__/(_______)(_______/(_)   |/       (_) |/     \|
+"#;
+ 
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    GREET
-        .iter()
-        .flat_map(|bt| [*bt, COLOR])
-        .enumerate()
-        .for_each(|(i, byte)| unsafe {
-            *BUFFER.offset(i as isize) = byte;
-        });
-
+    print!("{}", LOGO);
     loop {}
 }

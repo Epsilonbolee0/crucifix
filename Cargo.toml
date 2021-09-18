@@ -4,4 +4,10 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
+spin = "0.5.2"
 bootloader = "0.9.8"
+volatile = "0.2.6"
+
+[dependencies.lazy_static]
+version = "1.0"
+features = ["spin_no_std"]
