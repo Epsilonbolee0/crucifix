@@ -23,8 +23,13 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
+fn print_logo() {
+    let shift: &str = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    println!("{}{}", LOGO, shift)
+}
+
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    print!("{}", LOGO);
+    print_logo();    
     loop {}
 }
