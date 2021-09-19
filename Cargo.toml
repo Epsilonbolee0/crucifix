@@ -10,6 +10,15 @@ volatile = "0.2.6"
 x86_64 = "0.14.2"
 uart_16550 = "0.2.0"
 
+
+[[test]]
+name = "should_panic"
+harness = false
+
+[[test]]
+name = "stack_overflow"
+harness = false
+
 [dependencies.lazy_static]
 version = "1.0"
 features = ["spin_no_std"]
@@ -20,7 +29,3 @@ test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
             "-display", "none"]
 test-success-exit-code = 33
 test-timeout = 30
-
-[[test]]
-name = "should_panic"
-harness = false
