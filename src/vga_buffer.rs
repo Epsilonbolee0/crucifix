@@ -33,6 +33,7 @@ pub enum Color {
     White = 15,
 }
 
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 struct ColorCode(u8);
@@ -40,6 +41,10 @@ struct ColorCode(u8);
 impl ColorCode {
     fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
+    }
+
+    pub fn blinking(&mut self) -> ColorCode {
+        ColorCode(self.0 | 1 << 7)
     }
 }
 
@@ -64,10 +69,19 @@ pub struct Writer {
     buffer: &'static mut Buffer,
 }
 
+
+pub const BACKSPACE: u8 = 8;
+pub const NEWLINE: u8 = b'\n' as u8;
+pub const TABULATION: u8 = b'\t' as u8;
+
+pub const GREET: &str = "crucifix@> ";
+
 impl Writer {
     pub fn write_byte(&mut self, byte: u8) {
         match byte {
-            b'\n' => self.new_line(),
+            TABULATION => self.tabulate(),
+            BACKSPACE => self.delete_byte(),
+            NEWLINE => self.new_line(),
             byte => {
                 if self.column_position >= BUFFER_WIDTH {
                     self.new_line();
@@ -83,14 +97,42 @@ impl Writer {
                 });
 
                 self.column_position += 1;
+
+                self.cursor();
             }
         }
+    }
+
+    fn delete_byte(&mut self) {
+        let blank = self.blank();
+
+        if self.column_position > GREET.len() {
+            self.column_position -= 1;
+        }
+
+        let row = BUFFER_HEIGHT - 1;
+        let col = self.column_position;
+
+        self.buffer.chars[row][col].write(blank);
+        self.buffer.chars[row][col + 1].write(blank);
+        self.cursor();
+    }
+
+    fn cursor(&mut self) {
+        let row = BUFFER_HEIGHT - 1;
+        let col = self.column_position;
+        let color_code = self.color_code.blinking();
+
+        self.buffer.chars[row][col].write(ScreenChar {
+            ascii_character: b' ',
+            color_code,
+        });
     }
 
     fn write_string(&mut self, s: &str) {
         for byte in s.bytes() {
             match byte {
-                0x20..=0x7e | b'\n' => self.write_byte(byte),
+                0x20..=0x7e | NEWLINE | BACKSPACE | TABULATION => self.write_byte(byte),
                 _ => self.write_byte(0xFE),
             }
         }
@@ -103,18 +145,39 @@ impl Writer {
                 self.buffer.chars[row - 1][col].write(character);
             }
         }
+
+        let row = BUFFER_HEIGHT - 1;
+        let col = self.column_position;
+        let blank = self.blank();
+
+        self.buffer.chars[row - 1][col].write(blank);
+        
         self.clear_row(BUFFER_HEIGHT - 1);
         self.column_position = 0;
+        self.greet();
     }
 
     fn clear_row(&mut self, row: usize) {
+        let blank = self.blank();
+        for col in 0..BUFFER_WIDTH {
+            self.buffer.chars[row][col].write(blank);
+        }
+    }
+
+    fn blank(&mut self) -> ScreenChar {
         let blank = ScreenChar {
             ascii_character: b' ',
             color_code: self.color_code,
         };
-        for col in 0..BUFFER_WIDTH {
-            self.buffer.chars[row][col].write(blank);
-        }
+        blank
+    }
+
+    fn tabulate(&mut self) {
+        self.write_string("  ");
+    }
+
+    fn greet(&mut self) {
+        self.write_string(GREET);
     }
 }
 

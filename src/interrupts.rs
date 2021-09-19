@@ -1,11 +1,13 @@
 use spin;
-use crate::{gdt, print, println};
+use crate::{gdt, print, println, exit_qemu, QemuExitCode};
 use lazy_static::lazy_static;
 use pic8259::ChainedPics;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
+
+pub const ESCAPE: u8 = 27;
 
 pub static PICS: spin::Mutex<ChainedPics> = 
     spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
@@ -93,7 +95,12 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
         if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
             if let Some(key) = keyboard.process_keyevent(key_event) {
                 match key {
-                    DecodedKey::Unicode(character) => print!("{}", character),
+                    DecodedKey::Unicode(character) => {
+                        match character as u8 {
+                            ESCAPE => exit_qemu(QemuExitCode::Failed),
+                            _ => print!("{}", character),
+                        }
+                    }
                     DecodedKey::RawKey(key) => print!("{:?}", key),
                 }
             }
