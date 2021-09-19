@@ -9,7 +9,7 @@ pub extern "C" fn _start() -> ! {
     should_fail();
     serial_println!("[TEST DID NOT PANIC]");
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+    crucifix::hlt_loop();
 }
 
 fn should_fail() {
@@ -21,5 +21,5 @@ fn should_fail() {
 fn panic(_info: &PanicInfo) -> ! {
     serial_println!("[OK]");
     exit_qemu(QemuExitCode::Success);
-    loop {}
+    crucifix::hlt_loop();
 }

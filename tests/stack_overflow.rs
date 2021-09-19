@@ -48,7 +48,7 @@ extern "x86-interrupt" fn test_double_fault_handler(
 ) -> ! {
     serial_println!("[OK]");
     exit_qemu(QemuExitCode::Success);
-    loop {}
+    crucifix::hlt_loop();
 }
 
 #[panic_handler]

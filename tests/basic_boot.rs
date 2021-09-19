@@ -11,7 +11,7 @@ use crucifix::println;
 pub extern "C" fn _start() -> ! {
     test_main();
 
-    loop {}
+    crucifix::hlt_loop();
 }
 
 #[panic_handler]
