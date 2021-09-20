@@ -74,7 +74,7 @@ pub const BACKSPACE: u8 = 8;
 pub const NEWLINE: u8 = b'\n' as u8;
 pub const TABULATION: u8 = b'\t' as u8;
 
-pub const GREET: &str = "crucifix@> ";
+pub const GREET: &str = "@> ";
 
 impl Writer {
     pub fn write_byte(&mut self, byte: u8) {

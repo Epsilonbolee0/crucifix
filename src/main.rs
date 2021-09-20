@@ -12,10 +12,13 @@ pub extern "C" fn _start() -> ! {
     println!("Hello, crucifix!");
     crucifix::init();
 
+    let ptr = 0xDEADBEEF as *mut u32;
+    unsafe {*ptr = 42;}
+
     #[cfg(test)]
     test_main();
 
-    println!("It fucking worked!");
+    println!("It worked!");
     crucifix::hlt_loop();
 }
 
